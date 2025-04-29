@@ -44,6 +44,7 @@
     ]
   },
   "devDependencies": {
+    "prettier": "^3.5.3",
     "react-app-rewired": "^2.2.1",
     "worker-loader": "^3.0.8"
   }
