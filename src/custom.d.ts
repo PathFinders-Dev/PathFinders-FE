@@ -1,4 +1,4 @@
-// src/types/custom.d.ts
+// src/custom.d.ts
 declare module "*.worker.ts" {
   class WebpackWorker extends Worker {
     constructor();
