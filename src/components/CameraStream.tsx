@@ -9,6 +9,7 @@ interface CameraStreamProps {
 const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
   const classes: string[] = ["Fire", "Smoke"];
   const [ready, setReady] = useState(false);
+  const [mode, setMode] = useState<"camera" | "example">("camera"); // ✅ 추가
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hiddenCanvasRef = useRef<HTMLCanvasElement>(null);
@@ -34,17 +35,43 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
   }, []);
 
   useEffect(() => {
-    const startCamera = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.onloadedmetadata = () => {
-          requestAnimationFrame(predictLoop);
-        };
+    if (!ready) return;
+
+    if (mode === "camera") {
+      startCamera();
+    } else if (mode === "example") {
+      startExample();
+    }
+  }, [ready, mode]); // ✅ ready, mode 둘 다 의존성 추가
+
+  const startCamera = async () => {
+    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+    if (videoRef.current) {
+      videoRef.current.srcObject = stream;
+      videoRef.current.onloadedmetadata = () => {
+        requestAnimationFrame(predictLoop);
+      };
+      videoRef.current.play();
+    }
+  };
+
+  const startExample = async () => {
+    if (videoRef.current) {
+      const stream = videoRef.current.srcObject as MediaStream;
+      if (stream) {
+        // 카메라 끄기
+        stream.getTracks().forEach((track) => track.stop());
       }
-    };
-    startCamera();
-  }, [ready]);
+
+      videoRef.current.srcObject = null;
+      videoRef.current.src = "/test-fire.mp4"; // ✅ 예시 영상 경로 (public 폴더에 example.mp4 넣어야 함)
+      videoRef.current.loop = true;
+      videoRef.current.onloadedmetadata = () => {
+        videoRef.current?.play();
+        requestAnimationFrame(predictLoop);
+      };
+    }
+  };
 
   const predictLoop = () => {
     if (
@@ -90,48 +117,6 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
     requestAnimationFrame(predictLoop);
   };
 
-  // const drawPredictions = (predictions: Prediction[]) => {
-  //   const canvas = canvasRef.current;
-  //   const video = videoRef.current;
-  //   if (!canvas || !video) return;
-
-  //   const ctx = canvas.getContext("2d", { willReadFrequently: true });
-  //   if (!ctx) return;
-
-  //   const inputWidth = video.videoWidth;
-  //   const inputHeight = video.videoHeight;
-  //   const displayWidth = canvas.offsetWidth;
-  //   const displayHeight = canvas.offsetHeight;
-  //   const scaleX = displayWidth / inputWidth;
-  //   const scaleY = displayHeight / inputHeight;
-
-  //   canvas.width = inputWidth;
-  //   canvas.height = inputHeight;
-
-  //   ctx.clearRect(0, 0, canvas.width, canvas.height);
-  //   ctx.lineWidth = 2;
-  //   ctx.font = "16px sans-serif";
-  //   ctx.strokeStyle = "lime";
-  //   ctx.fillStyle = "lime";
-
-  //   predictions.forEach((pred) => {
-  //     const [x, y, boxWidth, boxHeight] = pred.bbox;
-  //     ctx.strokeRect(x, y, boxWidth, boxHeight);
-  //     ctx.fillText(
-  //       `${classes[pred.classId]} (${(pred.score * 100).toFixed(1)}%)`,
-  //       x,
-  //       y - 5
-  //     );
-  //     addLog(
-  //       `Detected ${classes[pred.classId]} with ${(pred.score * 100).toFixed(
-  //         1
-  //       )}% at [${Math.round(x)}, ${Math.round(y)}, ${Math.round(
-  //         boxWidth
-  //       )}, ${Math.round(boxHeight)}]`
-  //     );
-  //   });
-  // };
-
   const drawPredictions = (predictions: Prediction[]) => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
@@ -145,7 +130,6 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
     const videoWidth = video.videoWidth;
     const videoHeight = video.videoHeight;
 
-    // 비율 계산
     const videoAspect = videoWidth / videoHeight;
     const canvasAspect = canvasWidth / canvasHeight;
 
@@ -155,20 +139,17 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
     let offsetY = 0;
 
     if (canvasAspect > videoAspect) {
-      // 캔버스가 더 넓음 → 세로를 꽉 채우고 가로에 여백 생김
       renderHeight = canvasHeight;
       renderWidth = videoAspect * renderHeight;
       offsetX = (canvasWidth - renderWidth) / 2;
       offsetY = 0;
     } else {
-      // 캔버스가 더 높음 → 가로를 꽉 채우고 세로에 여백 생김
       renderWidth = canvasWidth;
       renderHeight = renderWidth / videoAspect;
       offsetX = 0;
       offsetY = (canvasHeight - renderHeight) / 2;
     }
 
-    // canvas 크기 재설정 (주의: 이건 픽셀 크기 기준)
     canvas.width = canvas.offsetWidth;
     canvas.height = canvas.offsetHeight;
 
@@ -181,7 +162,6 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
     predictions.forEach((pred) => {
       const [x, y, boxWidth, boxHeight] = pred.bbox;
 
-      // bbox를 화면에 맞게 변환
       const scaleX = renderWidth / videoWidth;
       const scaleY = renderHeight / videoHeight;
 
@@ -217,7 +197,7 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
         style={{
           width: "100%",
           height: "100%",
-          objectFit: "contain", // ✅ 깨짐 방지
+          objectFit: "contain",
         }}
       />
       <canvas
@@ -232,6 +212,23 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
         }}
       />
       <canvas ref={hiddenCanvasRef} style={{ display: "none" }} />
+
+      {/* ✅ 모드 전환 버튼 */}
+      <button
+        onClick={() =>
+          setMode((prev) => (prev === "camera" ? "example" : "camera"))
+        }
+        style={{
+          position: "absolute",
+          top: 20,
+          left: 20,
+          zIndex: 10,
+          padding: "10px 20px",
+          fontSize: "16px",
+        }}
+      >
+        {mode === "camera" ? "예시 영상으로 전환" : "카메라로 전환"}
+      </button>
     </div>
   );
 };
