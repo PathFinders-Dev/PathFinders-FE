@@ -36,7 +36,6 @@ export default function useWebHooks({
 
     setSocket(ws);
 
-    // 컴포넌트 언마운트 시 소켓 닫기
     return () => {
       ws.close();
     };

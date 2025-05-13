@@ -1,20 +1,42 @@
 import React, { useEffect, useRef, useState } from "react";
 import YoloWorker from "../workers/yolo.worker.ts";
 import { Prediction } from "../types/workerTypes";
+import axios from "axios";
+
+type PredictionData = {
+  name: string;
+  probability: number;
+  screenWidth: number;
+  screenHeight: number;
+  x1: number;
+  y1: number;
+  x2: number;
+  y2: number;
+  time: string;
+  latitude: number;
+  longitude: number;
+};
 
 interface CameraStreamProps {
+  location: string;
   addLog: (message: string) => void;
 }
 
-const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
+const CameraStream: React.FC<CameraStreamProps> = ({ location, addLog }) => {
   const classes: string[] = ["Fire", "Smoke"];
   const [ready, setReady] = useState(false);
-  const [mode, setMode] = useState<"camera" | "example">("camera"); // ✅ 추가
+  const [mode, setMode] = useState<"camera" | "example">("camera");
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const hiddenCanvasRef = useRef<HTMLCanvasElement>(null);
   const workerRef = useRef<Worker | null>(null);
   const lastInferenceTimeRef = useRef<number>(0);
+
+  const locationRef = useRef(location);
+
+  useEffect(() => {
+    locationRef.current = location;
+  }, [location]);
 
   useEffect(() => {
     const worker = new YoloWorker();
@@ -25,7 +47,7 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
       const { type, predictions, message } = event.data;
 
       if (type === "ready") setReady(true);
-      if (type === "prediction") drawPredictions(predictions);
+      if (type === "prediction") drawPredictions(predictions, location);
       if (type === "error") console.error("[Worker:yolo Error]", message);
     };
 
@@ -42,8 +64,22 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
     } else if (mode === "example") {
       startExample();
     }
-  }, [ready, mode]); // ✅ ready, mode 둘 다 의존성 추가
+  }, [ready, mode]);
 
+  const postPrediction = async (data: PredictionData[]) => {
+    try {
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/object-detections`,
+        data,
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      console.log("Prediction data sent successfully:", response.data);
+    } catch (error) {}
+  };
   const startCamera = async () => {
     const stream = await navigator.mediaDevices.getUserMedia({ video: true });
     if (videoRef.current) {
@@ -59,12 +95,11 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
     if (videoRef.current) {
       const stream = videoRef.current.srcObject as MediaStream;
       if (stream) {
-        // 카메라 끄기
         stream.getTracks().forEach((track) => track.stop());
       }
 
       videoRef.current.srcObject = null;
-      videoRef.current.src = "/test-fire.mp4"; // ✅ 예시 영상 경로 (public 폴더에 example.mp4 넣어야 함)
+      videoRef.current.src = "/test-fire.mp4";
       videoRef.current.loop = true;
       videoRef.current.onloadedmetadata = () => {
         videoRef.current?.play();
@@ -117,7 +152,7 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
     requestAnimationFrame(predictLoop);
   };
 
-  const drawPredictions = (predictions: Prediction[]) => {
+  const drawPredictions = (predictions: Prediction[], location: string) => {
     const canvas = canvasRef.current;
     const video = videoRef.current;
     if (!canvas || !video) return;
@@ -177,6 +212,23 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
         drawY - 5
       );
 
+      const predictionData: PredictionData[] = [
+        {
+          name: classes[pred.classId],
+          probability: pred.score * 100,
+          screenWidth: canvasWidth,
+          screenHeight: canvasHeight,
+          x1: Math.round(drawX),
+          y1: Math.round(drawY),
+          x2: Math.round(drawX + drawWidth),
+          y2: Math.round(drawY + drawHeight),
+          time: new Date().toISOString(),
+          latitude: parseFloat(locationRef.current.split(",")[0]),
+          longitude: parseFloat(locationRef.current.split(",")[1].trim()),
+        },
+      ];
+      postPrediction(predictionData);
+
       addLog(
         `Detected ${classes[pred.classId]} with ${(pred.score * 100).toFixed(
           1
@@ -213,7 +265,6 @@ const CameraStream: React.FC<CameraStreamProps> = ({ addLog }) => {
       />
       <canvas ref={hiddenCanvasRef} style={{ display: "none" }} />
 
-      {/* ✅ 모드 전환 버튼 */}
       <button
         onClick={() =>
           setMode((prev) => (prev === "camera" ? "example" : "camera"))

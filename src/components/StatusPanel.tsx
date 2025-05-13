@@ -1,33 +1,15 @@
 import React, { useEffect, useState } from "react";
 
 interface StatusPanelProps {
+  location: string;
   logMessages: string[];
 }
 
-const StatusPanel: React.FC<StatusPanelProps> = ({ logMessages }) => {
-  const [location, setLocation] = useState<string>("측정 중...");
+const StatusPanel: React.FC<StatusPanelProps> = ({ location, logMessages }) => {
   const [networkStatus, setNetworkStatus] = useState<string>(
     navigator.onLine ? "온라인" : "오프라인"
   );
-  // const [logMessages, setLogMessages] = useState<string[]>([]);
   const [alertStatus, setAlertStatus] = useState<string>("없음");
-
-  useEffect(() => {
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (pos) => {
-          const { latitude, longitude } = pos.coords;
-          setLocation(`${latitude.toFixed(5)}, ${longitude.toFixed(5)}`);
-        },
-        (err) => {
-          setLocation("위치 접근 불가");
-        },
-        { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
-      );
-    } else {
-      setLocation("Geolocation 지원 안됨");
-    }
-  }, []);
 
   useEffect(() => {
     const updateNetwork = () => {
@@ -40,17 +22,6 @@ const StatusPanel: React.FC<StatusPanelProps> = ({ logMessages }) => {
       window.removeEventListener("offline", updateNetwork);
     };
   }, []);
-
-  // 추후 socket 연결 시 사용할 dummy 로그 시뮬레이션 (테스트용)
-  // useEffect(() => {
-  //   const interval = setInterval(() => {
-  //     setLogMessages((prev) => [
-  //       `백엔드로부터 응답 수신 [${new Date().toLocaleTimeString()}]`,
-  //       ...prev.slice(0, 19),
-  //     ]);
-  //   }, 5000);
-  //   return () => clearInterval(interval);
-  // }, []);
 
   return (
     <div

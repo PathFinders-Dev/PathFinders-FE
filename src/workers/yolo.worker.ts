@@ -2,7 +2,7 @@
 import * as tf from "@tensorflow/tfjs";
 import "@tensorflow/tfjs-backend-webgl";
 
-const classNames = ["fire", "smoke"]; // 예시 (2 classes)
+const classNames = ["fire", "smoke"];
 const scoreThreshold = 0.7;
 
 let model: tf.GraphModel | null = null;
@@ -48,7 +48,7 @@ self.onmessage = async (event: MessageEvent) => {
   if (type === "init") {
     try {
       await tf.setBackend("webgl");
-      tf.env().set("WEBGL_PACK", false); // 🔥 WebGL 최적화
+      tf.env().set("WEBGL_PACK", false);
       tf.env().set("WEBGL_DELETE_TEXTURE_THRESHOLD", 0);
       await tf.ready();
       model = await tf.loadGraphModel("/models/yolov8n_tfjs/model.json");
@@ -64,7 +64,7 @@ self.onmessage = async (event: MessageEvent) => {
       const inputTensor = tf.tidy(() =>
         tf.browser
           .fromPixels(imageData)
-          .resizeBilinear([640, 640]) // 필요시 [320, 320]로 줄여도 됨
+          .resizeBilinear([640, 640])
           .div(255.0)
           .expandDims(0)
       );
@@ -98,11 +98,10 @@ self.onmessage = async (event: MessageEvent) => {
         }
       }
 
-      const finalDetections = nms(rawPredictions, 0.5, 20); // IOU 0.5, 최대 20개
+      const finalDetections = nms(rawPredictions, 0.5, 20);
 
       self.postMessage({ type: "prediction", predictions: finalDetections });
 
-      // ✅ 메모리 해제
       inputTensor.dispose();
       outputTensor.dispose();
       transposed.dispose();
