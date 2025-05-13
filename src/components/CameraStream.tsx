@@ -99,7 +99,7 @@ const CameraStream: React.FC<CameraStreamProps> = ({ location, addLog }) => {
       }
 
       videoRef.current.srcObject = null;
-      videoRef.current.src = "/test-fire.mp4";
+      videoRef.current.src = "/test-fire01.mp4";
       videoRef.current.loop = true;
       videoRef.current.onloadedmetadata = () => {
         videoRef.current?.play();
@@ -229,12 +229,17 @@ const CameraStream: React.FC<CameraStreamProps> = ({ location, addLog }) => {
       ];
       postPrediction(predictionData);
 
+      // addLog(
+      //   `Detected ${classes[pred.classId]} with ${(pred.score * 100).toFixed(
+      //     1
+      //   )}% at [${Math.round(drawX)}, ${Math.round(drawY)}, ${Math.round(
+      //     drawWidth
+      //   )}, ${Math.round(drawHeight)}]`
+      // );
       addLog(
         `Detected ${classes[pred.classId]} with ${(pred.score * 100).toFixed(
           1
-        )}% at [${Math.round(drawX)}, ${Math.round(drawY)}, ${Math.round(
-          drawWidth
-        )}, ${Math.round(drawHeight)}]`
+        )}% at ${videoRef.current?.currentTime.toFixed(2)} seconds`
       );
     });
   };
