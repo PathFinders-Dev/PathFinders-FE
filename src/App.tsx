@@ -5,7 +5,7 @@ import useWebHooks from "./hooks/useWebSocket";
 
 function App() {
   useWebHooks({
-    url: `wss://api.wildfire.moveto.kr/ws`,
+    url: `ws://api.wildfire.moveto.kr/ws`,
     onOpen: () => {
       console.log("소켓 연결 성공");
     },
