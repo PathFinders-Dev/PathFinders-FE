@@ -99,7 +99,7 @@ const CameraStream: React.FC<CameraStreamProps> = ({ location, addLog }) => {
       }
 
       videoRef.current.srcObject = null;
-      videoRef.current.src = "/test-fire01.mp4";
+      videoRef.current.src = "/test-fire.mp4";
       videoRef.current.loop = true;
       videoRef.current.onloadedmetadata = () => {
         videoRef.current?.play();
@@ -128,7 +128,7 @@ const CameraStream: React.FC<CameraStreamProps> = ({ location, addLog }) => {
     }
 
     const now = Date.now();
-    if (now - lastInferenceTimeRef.current < 300) {
+    if (now - lastInferenceTimeRef.current < 100) {
       requestAnimationFrame(predictLoop);
       return;
     }
