@@ -1,0 +1,21 @@
+[debug] [2025-05-15T09:41:03.697Z] ----------------------------------------------------------------------
+[debug] [2025-05-15T09:41:03.698Z] Command:       /Users/jhyunwoo/.nvm/versions/node/v22.15.0/bin/node /Users/jhyunwoo/.nvm/versions/node/v22.15.0/bin/firebase deploy
+[debug] [2025-05-15T09:41:03.699Z] CLI Version:   14.3.1
+[debug] [2025-05-15T09:41:03.699Z] Platform:      darwin
+[debug] [2025-05-15T09:41:03.699Z] Node Version:  v22.15.0
+[debug] [2025-05-15T09:41:03.699Z] Time:          Thu May 15 2025 18:41:03 GMT+0900 (Japan Standard Time)
+[debug] [2025-05-15T09:41:03.699Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-05-15T09:41:03.774Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-05-15T09:41:03.775Z] > authorizing via signed-in user (jhyunwoo0228@gmail.com)
+[debug] [2025-05-15T09:41:03.775Z] [iam] checking project solutionchallenge-pioneers for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-05-15T09:41:03.775Z] Checked if tokens are valid: true, expires at: 1747305630581
+[debug] [2025-05-15T09:41:03.775Z] Checked if tokens are valid: true, expires at: 1747305630581
+[debug] [2025-05-15T09:41:03.775Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/solutionchallenge-pioneers:testIamPermissions [none]
+[debug] [2025-05-15T09:41:03.775Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/solutionchallenge-pioneers:testIamPermissions x-goog-quota-user=projects/solutionchallenge-pioneers
+[debug] [2025-05-15T09:41:03.775Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/solutionchallenge-pioneers:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-05-15T09:41:08.831Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/solutionchallenge-pioneers:testIamPermissions 200
+[debug] [2025-05-15T09:41:08.831Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/solutionchallenge-pioneers:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-05-15T09:41:08.832Z] Checked if tokens are valid: true, expires at: 1747305630581
+[debug] [2025-05-15T09:41:08.832Z] Checked if tokens are valid: true, expires at: 1747305630581
+[debug] [2025-05-15T09:41:08.832Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/solutionchallenge-pioneers [none]
