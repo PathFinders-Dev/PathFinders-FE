@@ -5,7 +5,7 @@ import useWebHooks from "./hooks/useWebSocket";
 
 function App() {
   useWebHooks({
-    url: `ws://api.wildfire.moveto.kr/ws`,
+    url: "ws://localhost:3000/ws",
     onOpen: () => {
       console.log("소켓 연결 성공");
     },
@@ -19,7 +19,7 @@ function App() {
           .replace("-", "")
           .replace("T", " ") +
           " 서버 통신 위험도 " +
-          JSON.parse(event.data).dangerLevel
+          JSON.parse(event.data).dangerLevel,
       );
     },
     onError: (error) => {
@@ -45,7 +45,7 @@ function App() {
         (err) => {
           setLocation("위치 접근 불가");
         },
-        { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
+        { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 },
       );
     } else {
       setLocation("Geolocation 지원 안됨");
