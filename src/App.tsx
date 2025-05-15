@@ -7,30 +7,47 @@ function App() {
   useWebHooks({
     url: "wss://api.wildfire.moveto.kr/ws",
     onOpen: () => {
-      console.log("소켓 연결 성공");
+      console.log("Connected to WebSocket");
     },
     onMessage: (event) => {
-      console.log("메시지 수신:", event.data);
+      const raw = event.data.split("overall_risk")[1];
+      const onlyLetters = raw
+        .replace(/[^a-zA-Z]/g, "")
+        .replaceAll("n", "")
+        .trim();
+      console.log(
+        onlyLetters,
+        ["low", "medium", "high", "critical"].includes(onlyLetters)
+      );
+      setRisk(
+        ["low", "medium", "high", "critical"].includes(onlyLetters)
+          ? onlyLetters
+          : "low"
+      );
+
       addLog(
         new Date()
           .toISOString()
+          .replace(/[-]/g, "")
           .split(".")[0]
-          .replace("-", "")
-          .replace("-", "")
           .replace("T", " ") +
-          " 서버 통신 위험도 " +
-          JSON.parse(event.data).dangerLevel,
+          " Risk Level By Server: " +
+          (["low", "medium", "high", "critical"].includes(onlyLetters)
+            ? onlyLetters
+            : "low")
       );
     },
+
     onError: (error) => {
-      console.error("소켓 오류:", error);
+      console.error("Socket Error:", error);
     },
     onClose: () => {
-      console.log("소켓 연결 종료");
+      console.log("Connection Ended");
     },
   });
-  const [location, setLocation] = useState("측정 중...");
+  const [location, setLocation] = useState("Checking...");
   const [logMessages, setLogMessages] = useState<string[]>([]);
+  const [risk, setRisk] = useState("low");
   const addLog = (message: string) => {
     setLogMessages((prev) => [message, ...prev.slice(0, 49)]);
   };
@@ -43,12 +60,12 @@ function App() {
           setLocation(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
         },
         (err) => {
-          setLocation("위치 접근 불가");
+          setLocation("Cannot get location");
         },
-        { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 },
+        { enableHighAccuracy: true, timeout: 3000, maximumAge: 0 }
       );
     } else {
-      setLocation("Geolocation 지원 안됨");
+      setLocation("Geolocation not supported");
     }
 
     return () => {
@@ -67,7 +84,11 @@ function App() {
           borderLeft: "2px solid #eee",
         }}
       >
-        <StatusPanel logMessages={logMessages} location={location} />
+        <StatusPanel
+          logMessages={logMessages}
+          location={location}
+          risk={risk}
+        />
       </div>
     </div>
   );

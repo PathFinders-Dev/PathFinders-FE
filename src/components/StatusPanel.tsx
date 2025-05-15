@@ -3,17 +3,21 @@ import React, { useEffect, useState } from "react";
 interface StatusPanelProps {
   location: string;
   logMessages: string[];
+  risk: string;
 }
 
-const StatusPanel: React.FC<StatusPanelProps> = ({ location, logMessages }) => {
+const StatusPanel: React.FC<StatusPanelProps> = ({
+  location,
+  logMessages,
+  risk,
+}) => {
   const [networkStatus, setNetworkStatus] = useState<string>(
-    navigator.onLine ? "온라인" : "오프라인"
+    navigator.onLine ? "Online" : "Offline"
   );
-  const [alertStatus, setAlertStatus] = useState<string>("없음");
 
   useEffect(() => {
     const updateNetwork = () => {
-      setNetworkStatus(navigator.onLine ? "온라인" : "오프라인");
+      setNetworkStatus(navigator.onLine ? "Online" : "Offline");
     };
     window.addEventListener("online", updateNetwork);
     window.addEventListener("offline", updateNetwork);
@@ -35,16 +39,27 @@ const StatusPanel: React.FC<StatusPanelProps> = ({ location, logMessages }) => {
     >
       <h2>Status Panel</h2>
       <p>
-        <strong>📍 위치:</strong> {location}
+        <strong>📍 Location:</strong> {location}
       </p>
       <p>
-        <strong>🌐 네트워크 상태:</strong> {networkStatus}
+        <strong>🌐 Network Status:</strong> {networkStatus}
       </p>
-      <p>
-        <strong>🚨 Alert 상태:</strong> {alertStatus}
+      <p
+        style={{
+          backgroundColor:
+            risk === "critical"
+              ? "#6F42C1"
+              : risk === "high"
+                ? "#DC3545"
+                : risk === "medium"
+                  ? "#FD7E14"
+                  : "#28A745",
+        }}
+      >
+        <strong>🚨 Alert Status:</strong> {risk}
       </p>
       <div style={{ marginTop: "1rem" }}>
-        <h3>📡 실시간 로그</h3>
+        <h3>📡 Live Logs</h3>
         <div
           style={{
             maxHeight: "60vh",

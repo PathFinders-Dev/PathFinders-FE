@@ -228,19 +228,6 @@ const CameraStream: React.FC<CameraStreamProps> = ({ location, addLog }) => {
         },
       ];
       postPrediction(predictionData);
-
-      // addLog(
-      //   `Detected ${classes[pred.classId]} with ${(pred.score * 100).toFixed(
-      //     1
-      //   )}% at [${Math.round(drawX)}, ${Math.round(drawY)}, ${Math.round(
-      //     drawWidth
-      //   )}, ${Math.round(drawHeight)}]`
-      // );
-      addLog(
-        `Detected ${classes[pred.classId]} with ${(pred.score * 100).toFixed(
-          1
-        )}% at ${videoRef.current?.currentTime.toFixed(2)} seconds`
-      );
     });
   };
 
@@ -283,7 +270,7 @@ const CameraStream: React.FC<CameraStreamProps> = ({ location, addLog }) => {
           fontSize: "16px",
         }}
       >
-        {mode === "camera" ? "예시 영상으로 전환" : "카메라로 전환"}
+        {mode === "camera" ? "Convert to Test video" : "Convert to Camera"}
       </button>
     </div>
   );
